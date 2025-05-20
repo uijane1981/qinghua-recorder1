@@ -15,7 +15,7 @@ if not os.path.exists(LOG_FILE):
     with open(LOG_FILE, "w", encoding="utf-8") as f:
         f.write("班級,姓名,時間,檔名\n")
 
-params = st.experimental_get_query_params()
+params = st.query_params
 view_mode = params.get("view", ["student"])[0]
 
 if view_mode == "teacher":
