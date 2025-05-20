@@ -11,6 +11,7 @@ LOG_FILE = "upload_log.csv"
 
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
+# 初始化紀錄檔
 if not os.path.exists(LOG_FILE):
     with open(LOG_FILE, "w", encoding="utf-8") as f:
         f.write("班級,姓名,時間,檔名\n")
@@ -19,14 +20,26 @@ params = st.query_params
 view_mode = params.get("view", ["student"])[0]
 
 if view_mode == "teacher":
-    st.title("👩‍🏫 教師端：學生上傳紀錄")
+    st.title("👩‍🏫 教師端：學生上傳紀錄與錄音播放")
     if os.path.exists(LOG_FILE):
         df = pd.read_csv(LOG_FILE)
         st.dataframe(df)
+
+        # 播放每筆錄音檔
+        st.subheader("▶️ 學生錄音檔播放")
+        for index, row in df.iterrows():
+            filepath = os.path.join(UPLOAD_DIR, row["檔名"])
+            if os.path.exists(filepath):
+                st.markdown(f"**{row['班級']} - {row['姓名']}** 上傳於 {row['時間']}")
+                st.audio(filepath)
+            else:
+                st.warning(f"⚠️ 找不到檔案：{row['檔名']}")
+
         with open(LOG_FILE, "rb") as f:
-            st.download_button("📥 下載上傳紀錄", f, file_name="upload_log.csv")
+            st.download_button("📥 下載上傳紀錄 CSV", f, file_name="upload_log.csv")
     else:
         st.warning("尚無任何學生上傳紀錄。")
+
 else:
     st.title("🎵 青花瓷直笛練習平台")
     st.markdown("請依下列步驟操作：")
