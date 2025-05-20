@@ -11,6 +11,11 @@ LOG_FILE = "upload_log.csv"
 if not os.path.exists(UPLOAD_DIR):
     os.makedirs(UPLOAD_DIR)
 
+# 確保記錄檔存在
+if not os.path.exists(LOG_FILE):
+    with open(LOG_FILE, "w", encoding="utf-8") as f:
+        f.write("班級,姓名,時間,檔名\n")
+
 view_mode = st.experimental_get_query_params().get("view", ["student"])[0]
 
 if view_mode == "teacher":
@@ -32,20 +37,19 @@ else:
     name_input = st.text_input("請輸入姓名")
     uploaded_file = st.file_uploader("請上傳您的錄音檔（mp3 或 m4a）", type=["mp3", "m4a"])
 
-    if st.button("📤 上傳錄音"):
-        if not all([class_input, name_input, uploaded_file]):
-            st.warning("請完整填寫資料並上傳錄音檔。")
-        else:
-            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-            ext = uploaded_file.name.split('.')[-1]
-            filename = f"{class_input}_{name_input}_青花瓷_{timestamp}.{ext}"
-            save_path = os.path.join(UPLOAD_DIR, filename)
+    if uploaded_file and class_input and name_input:
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        ext = uploaded_file.name.split('.')[-1]
+        filename = f"{class_input}_{name_input}_青花瓷_{timestamp}.{ext}"
+        save_path = os.path.join(UPLOAD_DIR, filename)
 
-            with open(save_path, "wb") as f:
-                f.write(uploaded_file.getbuffer())
+        with open(save_path, "wb") as f:
+            f.write(uploaded_file.getbuffer())
 
-            with open(LOG_FILE, "a", encoding="utf-8") as log:
-                log.write(f"{class_input},{name_input},{timestamp},{filename},{save_path}\n")
+        with open(LOG_FILE, "a", encoding="utf-8") as log:
+            log.write(f"{class_input},{name_input},{timestamp},{filename}\n")
 
-            st.success("✅ 上傳成功！")
-            st.audio(uploaded_file)
+        st.success("✅ 上傳成功！您已完成本次練習。")
+        st.audio(uploaded_file)
+    else:
+        st.info("請完整填寫資料並選擇音檔。")
